@@ -21,6 +21,8 @@
 #include "usart.h"
 
 /* USER CODE BEGIN 0 */
+#include "stdio.h"
+#include "stdarg.h"
 
 /* USER CODE END 0 */
 
@@ -466,5 +468,20 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 }
 
 /* USER CODE BEGIN 1 */
+#define TX_BUF_SIZE 456
+uint8_t send_buf[TX_BUF_SIZE];
+void usart_printf(const char *format, ...)
+{
+  va_list args;
+  uint32_t length;
+
+  va_start(args, format);
+//  length = vsprintf((char *)send_buf, (const char *)format, args);
+  length = vsnprintf((char *)send_buf, TX_BUF_SIZE, (const char *)format, args);
+//  length =
+  va_end(args);
+  HAL_UART_Transmit(&huart8, (uint8_t *)send_buf, length, 0xFFFF);
+//  HAL_UART_Transmit_DMA(&huart8, (uint8_t *)send_buf, length);
+}
 
 /* USER CODE END 1 */

@@ -47,7 +47,7 @@ class KeyC {
 public:
     uint64_t ticks;
     KEY_Event_e key_event;
-
+	KEY_Event_e key_tri_event;  //触发的事件，供外部获取判断，保留单击，双击，长按
     KEY_Port_IO key_port;
     KEY_Port_Pin key_pin;
 
@@ -58,7 +58,7 @@ public:
     void attachCallBack(KeyCallback cbfun, KEY_Event_e event);
     void keyTicks();
     void keyDelay();
-
+	KEY_Event_e getKeyStatus(); //获取当前触发状态，并恢复到默认状态
     KeyCallback callBack();
     uint32_t last_time = 0; //持续时间
 private:

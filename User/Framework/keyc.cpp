@@ -4,13 +4,12 @@
 
 #include "keyc.h"
 //测试用
-#include "usbd_cdc_if.h"
-
+#include "usart.h"
 #include "keyio.h"
 uint8_t (*readKeyLevel)(KeyC key);
 
 /**
-  * @brief 按键循环处理，哪个按键需要就把他的loop函数放入循环中
+  * @brief 按键循环处理，哪个按键需要就把他的loop函数放入循环中 1ms
   * @retval None
   */
 void KeyC::handleLoop()
@@ -39,13 +38,15 @@ void KeyC::handleLoop()
             if (current_level == this->_trigger_level)
             {
                 //开始按下
-//                usb_printf("PRESS\r\n");
+                usart_printf("PRESS\r\n");
+				
                 this->key_event = PRESS_DOWN;
 //                callBack();
                 this->ticks = 0;
                 this->_repeat = 1;
                 this->_state = 1; //准备下次进循环判断
             }else{
+				key_tri_event = NONE_PRESS;
                 this->key_event = NONE_PRESS;
             }
             break;
@@ -61,6 +62,8 @@ void KeyC::handleLoop()
             }else if (this->ticks > LONG_TICKS)
             {
                 // 一直在状态1，直到超时，说明是长按
+				 usart_printf("LONG_PRESS\r\n");
+				key_tri_event = LONG_PRESS_START;
                 this->key_event = LONG_PRESS_START; //长按
 //                callBack();
                 this->_state = 5; // 长按弹起
@@ -82,12 +85,15 @@ void KeyC::handleLoop()
                 if (this->_repeat == 1)
                 {
                     // 如果只记录了一次点击，单击
-//                    usb_printf("SINGLE_CLICK\r\n");
+					
+                    usart_printf("SINGLE_CLICK\r\n");
+					key_tri_event = SINGLE_CLICK;
                     this->key_event = SINGLE_CLICK;
 //                    callBack();
                 }else if (this->_repeat == 2)
                 {
-//                    usb_printf("DOUBLE_CLICK\r\n");
+                    usart_printf("DOUBLE_CLICK\r\n");
+					key_tri_event = DOUBLE_CLICK;
                     this->key_event = DOUBLE_CLICK;
 //                    callBack();
                 }
@@ -116,7 +122,7 @@ void KeyC::handleLoop()
         case 5: //状态5，从状态2来，已经记录开始长按，判断是否达到长按不放的状态
             if (current_level == this->_trigger_level)
             {
-//                usb_printf("PRESS_HOLD\r\n");
+                usart_printf("PRESS_HOLD\r\n");
                 this->key_event = LONG_PRESS_HOLD;
 //                callBack();
             } else
@@ -127,8 +133,20 @@ void KeyC::handleLoop()
             }
             break;
     }
+//	if(key_tri_event != key_event)
+//		key_tri_event = NONE_PRESS; // 每一个循环都情况当前状态
 }
-
+KEY_Event_e KeyC::getKeyStatus()
+{
+	KEY_Event_e tmp;
+	tmp = key_tri_event;
+//	key_tri_event =  NONE_PRESS;
+	return tmp;
+}
+void KeyC::attachCallBack(KeyCallback cbfun, KEY_Event_e event)
+{
+//	callBack = cbfun;
+}
 /**
   * @brief  按键延时卡住，不需要开启任务
   * @retval None

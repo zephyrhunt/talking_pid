@@ -23,8 +23,6 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "ledc.h"
-#include "keyc.h"
-#include "usart.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -262,30 +260,6 @@ void CAN1_RX0_IRQHandler(void)
 void TIM2_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM2_IRQn 0 */
-	static LedC led_user_red(GPIOE, GPIO_PIN_11);
-	static LedC led_user_green(GPIOF, GPIO_PIN_14);
-	static KeyC key_user(GPIOB, GPIO_PIN_2, 1);
-	static uint32_t run_times;
-	static uint32_t led_toggle_time= 500;
-	
-	if(run_times % 5 == 0)
-	{
-		if(key_user.getKeyStatus() ==  SINGLE_CLICK)
-		{
-			usart_printf("%d\n", led_toggle_time);
-			led_toggle_time += 200;
-		}
-		else if(key_user.getKeyStatus() ==  DOUBLE_CLICK)
-			led_toggle_time -= 200;
-		key_user.handleLoop(); //5ms更新一次
-	}
-	if(run_times % led_toggle_time == 0)
-	{
-		led_user_red.setStatus(LED_TOGGLE);
-		led_user_green.setStatus(LED_TOGGLE);
-	}
-	
-	++run_times;
 	
   /* USER CODE END TIM2_IRQn 0 */
   HAL_TIM_IRQHandler(&htim2);
